@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Repositories\MovieRepository;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 
 class MovieService
 {
@@ -26,35 +28,53 @@ class MovieService
     
     public function createMovie(array $data)
     {
-        $attributes = $this->prepareMovieData($data);
-        $relations = $this->prepareRelationsData($data);
-        
-        return $this->movieRepository->createWithRelations($attributes, $relations);
+        $callback = function () use ($data) {
+            $attributes = $this->prepareMovieData($data);
+            $relations = $this->prepareRelationsData($data);
+            
+            return $this->movieRepository->createWithRelations($attributes, $relations);
+        };
+
+        return $this->runInTransaction($callback);
     }
     
     public function updateMovie($id, array $data)
     {
-        $attributes = $this->prepareMovieData($data);
-        $relations = $this->prepareRelationsData($data);
+        $callback = function () use ($id, $data) {
+            $movie = $this->getMovieById($id);
+            $attributes = $this->prepareMovieData($data);
+            $relations = $this->prepareRelationsData($data);
+            
+            // Handle poster replacement if needed
+            if (isset($attributes['poster']) && $movie->poster) {
+                Storage::disk('public')->delete($movie->poster);
+            }
+            
+            return $this->movieRepository->updateWithRelations($id, $attributes, $relations);
+        };
         
-        return $this->movieRepository->updateWithRelations($id, $attributes, $relations);
+        return $this->runInTransaction($callback);
     }
     
     public function deleteMovie($id)
     {
-        $movie = $this->movieRepository->getById($id);
+        $callback = function () use ($id) {
+            $movie = $this->movieRepository->getByIdWithRelations($id);
+            
+            // Delete poster file if exists
+            if ($movie->poster) {
+                Storage::disk('public')->delete($movie->poster);
+            }
+            
+            // Delete related media files
+            foreach ($movie->media as $media) {
+                Storage::disk('public')->delete($media->path);
+            }
+            
+            return $this->movieRepository->delete($id);
+        };
         
-        // Delete poster file if exists
-        if ($movie->poster) {
-            Storage::delete('public/' . $movie->poster);
-        }
-        
-        // Delete related media files
-        foreach ($movie->media as $media) {
-            Storage::delete('public/' . $media->file_path);
-        }
-        
-        return $this->movieRepository->delete($id);
+        return $this->runInTransaction($callback);
     }
     
     public function searchMovies($term, $perPage = 15)
@@ -67,12 +87,29 @@ class MovieService
         return $this->movieRepository->getRatingStatistics($id);
     }
     
+    /**
+     * Run a callback in a transaction, or directly if we're in a test environment and a transaction is already active
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    protected function runInTransaction(callable $callback)
+    {
+        // If we're in a test environment and a transaction is already active, run the callback directly
+        if (App::environment('testing') && DB::transactionLevel() > 0) {
+            return $callback();
+        }
+        
+        // Otherwise, wrap in a transaction
+        return DB::transaction($callback);
+    }
+    
     protected function prepareMovieData(array $data)
     {
         $attributes = [
             'title' => $data['title'],
             'description' => $data['description'],
-            'release_date' => $data['release_date'],
+            'release_date' => $data['release_date'] ?? null,
             'runtime_minutes' => $data['runtime_minutes'] ?? null,
             'language' => $data['language'] ?? null,
             'trailer_url' => $data['trailer_url'] ?? null,
@@ -81,8 +118,8 @@ class MovieService
         ];
         
         // Handle poster upload
-        if (isset($data['poster']) && $data['poster']->isValid()) {
-            $posterPath = $data['poster']->store('posters', 'public');
+        if (isset($data['poster']) && is_object($data['poster']) && method_exists($data['poster'], 'isValid') && $data['poster']->isValid()) {
+            $posterPath = $data['poster']->store('movies', 'public');
             $attributes['poster'] = $posterPath;
         }
         

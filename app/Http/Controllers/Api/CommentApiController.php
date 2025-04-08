@@ -49,10 +49,14 @@ class CommentApiController extends Controller
         }
         
         try {
+            $userId = auth()->id();
+            $movieId = $request->input('movie_id');
+            $content = $request->input('content');
+            
             $comment = $this->commentService->createComment(
-                auth()->id(),
-                $request->input('movie_id'),
-                $request->input('content')
+                $userId,
+                $movieId,
+                $content
             );
             
             return response()->json([
@@ -104,10 +108,8 @@ class CommentApiController extends Controller
                 ], 403);
             }
             
-            $updatedComment = $this->commentService->updateComment(
-                $id,
-                $request->input('content')
-            );
+            $content = $request->input('content');
+            $updatedComment = $this->commentService->updateComment($id, $content);
             
             return response()->json([
                 'status' => 'success',

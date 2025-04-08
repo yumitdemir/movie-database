@@ -22,9 +22,11 @@ class CommentController extends Controller
             'content' => 'required|string'
         ]);
         
-        $validated['user_id'] = auth()->id();
+        $userId = auth()->id();
+        $movieId = $validated['movie_id'];
+        $content = $validated['content'];
         
-        $this->commentService->createComment($validated);
+        $this->commentService->createComment($userId, $movieId, $content);
         
         return redirect()->back()->with('success', 'Comment added successfully!');
     }
@@ -42,7 +44,7 @@ class CommentController extends Controller
             'content' => 'required|string'
         ]);
         
-        $this->commentService->updateComment($id, $validated);
+        $this->commentService->updateComment($id, $validated['content']);
         
         return redirect()->back()->with('success', 'Comment updated successfully!');
     }

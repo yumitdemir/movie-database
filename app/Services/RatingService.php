@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Repositories\RatingRepository;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 
 class RatingService
 {
@@ -25,14 +27,45 @@ class RatingService
     
     public function rateMovie($userId, $movieId, $value)
     {
-        // Validate rating is between 1-10
-        $value = max(1, min(10, $value));
+        $callback = function () use ($userId, $movieId, $value) {
+            // Validate rating is between 1-10
+            $value = max(1, min(10, $value));
+            
+            return $this->ratingRepository->rateMovie($userId, $movieId, $value);
+        };
         
-        return $this->ratingRepository->rateMovie($userId, $movieId, $value);
+        return $this->runInTransaction($callback);
     }
     
     public function getUserRatings($userId, $perPage = 15)
     {
         return $this->ratingRepository->getUserRatings($userId, $perPage);
+    }
+    
+    public function getMovieAverageRating($movieId)
+    {
+        return $this->ratingRepository->getMovieAverageRating($movieId);
+    }
+    
+    public function getMovieRatingCount($movieId)
+    {
+        return $this->ratingRepository->getMovieRatingCount($movieId);
+    }
+    
+    /**
+     * Run a callback in a transaction, or directly if we're in a test environment and a transaction is already active
+     *
+     * @param callable $callback
+     * @return mixed
+     */
+    protected function runInTransaction(callable $callback)
+    {
+        // If we're in a test environment and a transaction is already active, run the callback directly
+        if (App::environment('testing') && DB::transactionLevel() > 0) {
+            return $callback();
+        }
+        
+        // Otherwise, wrap in a transaction
+        return DB::transaction($callback);
     }
 } 
