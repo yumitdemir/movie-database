@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Services\CommentService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class CommentApiController extends Controller
 {
@@ -13,6 +14,7 @@ class CommentApiController extends Controller
     public function __construct(CommentService $commentService)
     {
         $this->commentService = $commentService;
+        $this->middleware('auth:sanctum');
     }
     
     public function index(Request $request)
@@ -28,17 +30,43 @@ class CommentApiController extends Controller
         return response()->json($comments);
     }
     
+    /**
+     * Store a new comment
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'movie_id' => 'required|exists:movies,id',
-            'content' => 'required|string',
-            'user_id' => 'required|exists:users,id'
+            'content' => 'required|string|max:1000'
         ]);
         
-        $comment = $this->commentService->createComment($validated);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
         
-        return response()->json($comment, 201);
+        try {
+            $comment = $this->commentService->createComment(
+                auth()->id(),
+                $request->input('movie_id'),
+                $request->input('content')
+            );
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Comment submitted successfully',
+                'data' => $comment
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to submit comment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
     
     public function show($id)
@@ -48,23 +76,102 @@ class CommentApiController extends Controller
         return response()->json($comment);
     }
     
+    /**
+     * Update an existing comment
+     */
     public function update(Request $request, $id)
     {
-        $comment = $this->commentService->getById($id);
-        
-        $validated = $request->validate([
-            'content' => 'required|string'
+        $validator = Validator::make($request->all(), [
+            'content' => 'required|string|max:1000'
         ]);
         
-        $updated = $this->commentService->updateComment($id, $validated);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
         
-        return response()->json($updated);
+        try {
+            $comment = $this->commentService->getById($id);
+            
+            // Check if user owns the comment
+            if ($comment->user_id !== auth()->id()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized action'
+                ], 403);
+            }
+            
+            $updatedComment = $this->commentService->updateComment(
+                $id,
+                $request->input('content')
+            );
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Comment updated successfully',
+                'data' => $updatedComment
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update comment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
     
+    /**
+     * Delete a comment
+     */
     public function destroy($id)
     {
-        $this->commentService->deleteComment($id);
-        
-        return response()->json(null, 204);
+        try {
+            $comment = $this->commentService->getById($id);
+            
+            // Check if user owns the comment
+            if ($comment->user_id !== auth()->id()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Unauthorized action'
+                ], 403);
+            }
+            
+            $this->commentService->deleteComment($id);
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Comment deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to delete comment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Get comments for a movie
+     */
+    public function getMovieComments($movieId)
+    {
+        try {
+            $comments = $this->commentService->getMovieComments($movieId);
+            
+            return response()->json([
+                'status' => 'success',
+                'data' => $comments
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to get comments',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 } 
