@@ -8,6 +8,7 @@ use App\Services\RatingService;
 use App\Services\MediaService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Validator;
 
 class MovieController extends Controller
 {
@@ -41,7 +42,17 @@ class MovieController extends Controller
     
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        // Convert comma-separated strings to arrays
+        $data = $request->all();
+        
+        // Process comma separated inputs into arrays
+        foreach (['genres', 'directors', 'artists'] as $field) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                $data[$field] = array_map('trim', explode(',', $data[$field]));
+            }
+        }
+        
+        $validated = Validator::make($data, [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'release_date' => 'required|date',
@@ -54,7 +65,7 @@ class MovieController extends Controller
             'genres' => 'nullable|array',
             'directors' => 'nullable|array',
             'artists' => 'nullable|array',
-        ]);
+        ])->validate();
         
         $movie = $this->movieService->createMovie($validated);
         
@@ -83,7 +94,17 @@ class MovieController extends Controller
     
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
+        // Convert comma-separated strings to arrays
+        $data = $request->all();
+        
+        // Process comma separated inputs into arrays
+        foreach (['genres', 'directors', 'artists'] as $field) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                $data[$field] = array_map('trim', explode(',', $data[$field]));
+            }
+        }
+        
+        $validated = Validator::make($data, [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'release_date' => 'required|date',
@@ -96,7 +117,7 @@ class MovieController extends Controller
             'genres' => 'nullable|array',
             'directors' => 'nullable|array',
             'artists' => 'nullable|array',
-        ]);
+        ])->validate();
         
         $movie = $this->movieService->updateMovie($id, $validated);
         
