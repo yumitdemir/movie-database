@@ -55,89 +55,6 @@
             <div class="col-md-8">
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">Demographics</h5>
-                    </div>
-                    <div class="card-body">
-                        @if($movie->ratings_count > 0)
-                            <div class="row">
-                                @if(!empty($statistics['ratings_by_gender']))
-                                    <div class="col-md-6 mb-4">
-                                        <h6>Ratings by Gender</h6>
-                                        <ul class="list-group">
-                                            @foreach($statistics['ratings_by_gender'] as $gender => $data)
-                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    {{ $gender ?: 'Unspecified' }}
-                                                    <span>
-                                                        <span class="text-warning">★</span> {{ number_format($data['average'], 1) }}
-                                                        <span class="badge bg-primary rounded-pill">{{ $data['count'] }}</span>
-                                                    </span>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
-
-                                @if(!empty($statistics['ratings_by_age_group']))
-                                    <div class="col-md-6 mb-4">
-                                        <h6>Ratings by Age Group</h6>
-                                        <ul class="list-group">
-                                            @foreach($statistics['ratings_by_age_group'] as $age_group => $data)
-                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    {{ $age_group }}
-                                                    <span>
-                                                        <span class="text-warning">★</span> {{ number_format($data['average'], 1) }}
-                                                        <span class="badge bg-primary rounded-pill">{{ $data['count'] }}</span>
-                                                    </span>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
-                            </div>
-
-                            <div class="row">
-                                @if(!empty($statistics['ratings_by_country']))
-                                    <div class="col-md-6 mb-4">
-                                        <h6>Top Countries</h6>
-                                        <ul class="list-group">
-                                            @foreach($statistics['ratings_by_country'] as $country => $data)
-                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    {{ $country ?: 'Unspecified' }}
-                                                    <span>
-                                                        <span class="text-warning">★</span> {{ number_format($data['average'], 1) }}
-                                                        <span class="badge bg-primary rounded-pill">{{ $data['count'] }}</span>
-                                                    </span>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
-
-                                @if(!empty($statistics['ratings_by_continent']))
-                                    <div class="col-md-6 mb-4">
-                                        <h6>Ratings by Continent</h6>
-                                        <ul class="list-group">
-                                            @foreach($statistics['ratings_by_continent'] as $continent => $data)
-                                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                    {{ $continent ?: 'Unspecified' }}
-                                                    <span>
-                                                        <span class="text-warning">★</span> {{ number_format($data['average'], 1) }}
-                                                        <span class="badge bg-primary rounded-pill">{{ $data['count'] }}</span>
-                                                    </span>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
-                            </div>
-                        @else
-                            <p class="text-center">No rating data available for demographic analysis</p>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="card mb-4">
-                    <div class="card-header">
                         <h5 class="card-title mb-0">Activity</h5>
                     </div>
                     <div class="card-body">
@@ -174,7 +91,7 @@
                                     <ul class="list-group">
                                         @foreach($statistics['recent_ratings'] as $rating)
                                             <li class="list-group-item">
-                                                <strong>{{ $rating->user->name }}</strong> rated <strong>{{ $rating->rating }}/10</strong>
+                                                <strong>{{ $rating->user->name }}</strong> rated <strong>{{ $rating->value }}/10</strong>
                                                 <small class="text-muted">{{ $rating->created_at->diffForHumans() }}</small>
                                             </li>
                                         @endforeach

@@ -124,51 +124,35 @@ class MovieRepository extends BaseRepository
     {
         $movie = $this->getById($movieId);
         
-        $byGender = $movie->ratings()
-            ->join('users', 'ratings.user_id', '=', 'users.id')
-            ->selectRaw('users.gender, AVG(ratings.value) as average, COUNT(*) as count')
-            ->groupBy('users.gender')
-            ->get();
-            
-        $byAgeGroup = $movie->ratings()
-            ->join('users', 'ratings.user_id', '=', 'users.id')
-            ->selectRaw('
-                CASE 
-                    WHEN TIMESTAMPDIFF(YEAR, users.birth_date, CURDATE()) < 18 THEN "Under 18"
-                    WHEN TIMESTAMPDIFF(YEAR, users.birth_date, CURDATE()) BETWEEN 18 AND 24 THEN "18-24"
-                    WHEN TIMESTAMPDIFF(YEAR, users.birth_date, CURDATE()) BETWEEN 25 AND 34 THEN "25-34"
-                    WHEN TIMESTAMPDIFF(YEAR, users.birth_date, CURDATE()) BETWEEN 35 AND 44 THEN "35-44"
-                    WHEN TIMESTAMPDIFF(YEAR, users.birth_date, CURDATE()) BETWEEN 45 AND 54 THEN "45-54"
-                    WHEN TIMESTAMPDIFF(YEAR, users.birth_date, CURDATE()) BETWEEN 55 AND 64 THEN "55-64"
-                    ELSE "65+" 
-                END AS age_group,
-                AVG(ratings.value) as average,
-                COUNT(*) as count
-            ')
-            ->groupBy('age_group')
-            ->get();
-            
-        $byContinent = $movie->ratings()
-            ->join('users', 'ratings.user_id', '=', 'users.id')
-            ->selectRaw('users.continent, AVG(ratings.value) as average, COUNT(*) as count')
-            ->groupBy('users.continent')
-            ->get();
-            
-        $byCountry = $movie->ratings()
-            ->join('users', 'ratings.user_id', '=', 'users.id')
-            ->selectRaw('users.country, AVG(ratings.value) as average, COUNT(*) as count')
-            ->groupBy('users.country')
-            ->get();
-            
         return [
             'overall' => [
                 'average' => $movie->ratings()->avg('value') ?: 0,
                 'count' => $movie->ratings()->count(),
             ],
-            'by_gender' => $byGender,
-            'by_age_group' => $byAgeGroup,
-            'by_continent' => $byContinent,
-            'by_country' => $byCountry,
+            'ratings_distribution' => $this->getRatingDistribution($movieId),
+            'recent_comments' => $movie->comments()->with('user')->latest()->take(5)->get(),
+            'recent_ratings' => $movie->ratings()->with('user')->latest()->take(5)->get(),
+            'comments_count' => $movie->comments()->count()
         ];
+    }
+    
+    protected function getRatingDistribution($movieId)
+    {
+        $distribution = [];
+        $ratings = \App\Models\Rating::where('movie_id', $movieId)->get();
+        
+        // Initialize all values from 1 to 10 with zero count
+        for ($i = 1; $i <= 10; $i++) {
+            $distribution[$i] = 0;
+        }
+        
+        // Count ratings by value
+        foreach ($ratings as $rating) {
+            if (isset($distribution[$rating->value])) {
+                $distribution[$rating->value]++;
+            }
+        }
+        
+        return $distribution;
     }
 } 
