@@ -155,7 +155,7 @@
                         </div>
                         <div class="card-body">
                             <div class="ratio ratio-16x9">
-                                <iframe src="{{ $movie->trailer_url }}" allowfullscreen></iframe>
+                                <iframe src="{{ getEmbedUrl($movie->trailer_url) }}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
                             </div>
                         </div>
                     </div>

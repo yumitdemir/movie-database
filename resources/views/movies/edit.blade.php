@@ -95,7 +95,7 @@
                             
                             <div class="mb-3">
                                 <label for="genres" class="form-label">Genres (comma separated)</label>
-                                <input type="text" class="form-control @error('genres') is-invalid @enderror" id="genres" name="genres" value="{{ old('genres', $movie->genres ? implode(', ', $movie->genres) : '') }}">
+                                <input type="text" class="form-control @error('genres') is-invalid @enderror" id="genres" name="genres" value="{{ old('genres', $movie->genres ? implode(', ', $movie->genres->pluck('name')->toArray()) : '') }}">
                                 @error('genres')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -103,7 +103,7 @@
                             
                             <div class="mb-3">
                                 <label for="directors" class="form-label">Directors (comma separated)</label>
-                                <input type="text" class="form-control @error('directors') is-invalid @enderror" id="directors" name="directors" value="{{ old('directors', $movie->directors ? implode(', ', $movie->directors) : '') }}">
+                                <input type="text" class="form-control @error('directors') is-invalid @enderror" id="directors" name="directors" value="{{ old('directors', $movie->directors ? implode(', ', $movie->directors->pluck('name')->toArray()) : '') }}">
                                 @error('directors')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -111,7 +111,7 @@
                             
                             <div class="mb-3">
                                 <label for="artists" class="form-label">Artists (comma separated)</label>
-                                <input type="text" class="form-control @error('artists') is-invalid @enderror" id="artists" name="artists" value="{{ old('artists', $movie->artists ? implode(', ', $movie->artists) : '') }}">
+                                <input type="text" class="form-control @error('artists') is-invalid @enderror" id="artists" name="artists" value="{{ old('artists', $movie->artists ? implode(', ', $movie->artists->pluck('name')->toArray()) : '') }}">
                                 @error('artists')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
