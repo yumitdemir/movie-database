@@ -26,9 +26,12 @@ class CommentServiceTest extends TestCase
         $this->mockRepository = Mockery::mock(CommentRepository::class);
         $this->service = new CommentService($this->mockRepository);
         
-        // Mock App and DB facades
+        // Mock App and DB facades to handle transactions properly
         App::shouldReceive('environment')->andReturn('testing');
-        DB::shouldReceive('transactionLevel')->andReturn(1);
+        DB::shouldReceive('transactionLevel')->andReturn(0);
+        DB::shouldReceive('transaction')->andReturnUsing(function ($callback) {
+            return $callback();
+        });
     }
 
     public function tearDown(): void

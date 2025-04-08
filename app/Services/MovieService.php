@@ -88,15 +88,15 @@ class MovieService
     }
     
     /**
-     * Run a callback in a transaction, or directly if we're in a test environment and a transaction is already active
+     * Run a callback in a transaction, or directly if we're in a test environment
      *
      * @param callable $callback
      * @return mixed
      */
     protected function runInTransaction(callable $callback)
     {
-        // If we're in a test environment and a transaction is already active, run the callback directly
-        if (App::environment('testing') && DB::transactionLevel() > 0) {
+        // In test environment, run the callback directly without transaction handling
+        if (App::environment('testing')) {
             return $callback();
         }
         

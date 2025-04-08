@@ -33,9 +33,12 @@ class MovieServiceTest extends TestCase
         // Setup storage for file uploads
         Storage::fake('public');
         
-        // Mock App and DB facades
+        // Mock App and DB facades to handle transactions properly
         App::shouldReceive('environment')->andReturn('testing');
-        DB::shouldReceive('transactionLevel')->andReturn(1);
+        DB::shouldReceive('transactionLevel')->andReturn(0);
+        DB::shouldReceive('transaction')->andReturnUsing(function ($callback) {
+            return $callback();
+        });
     }
 
     public function tearDown(): void
@@ -210,6 +213,7 @@ class MovieServiceTest extends TestCase
     {
         // Arrange
         $searchTerm = 'test';
+        $perPage = 15; // Default perPage value
         $expectedResults = collect([
             new Movie(['id' => 1, 'title' => 'Test Movie 1']),
             new Movie(['id' => 2, 'title' => 'Test Movie 2'])
@@ -217,7 +221,7 @@ class MovieServiceTest extends TestCase
         
         $this->mockRepository->shouldReceive('searchMovies')
             ->once()
-            ->with($searchTerm)
+            ->with($searchTerm, $perPage)
             ->andReturn($expectedResults);
 
         // Act
