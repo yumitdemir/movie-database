@@ -17,29 +17,33 @@
         @csrf
         @method('patch')
 
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+        <div class="mb-3">
+            <label for="name" class="form-label">{{ __('Name') }}</label>
+            <input id="name" name="name" type="text" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" required autofocus autocomplete="name">
+            @error('name')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
+        <div class="mb-3">
+            <label for="email" class="form-label">{{ __('Email') }}</label>
+            <input id="email" name="email" type="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $user->email) }}" required autocomplete="username">
+            @error('email')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div>
-                    <p class="text-sm mt-2 text-gray-800">
+                    <p class="text-sm mt-2 text-secondary">
                         {{ __('Your email address is unverified.') }}
 
-                        <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <button form="send-verification" class="btn btn-link p-0 text-decoration-underline">
                             {{ __('Click here to re-send the verification email.') }}
                         </button>
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
+                        <p class="mt-2 text-sm text-success">
                             {{ __('A new verification link has been sent to your email address.') }}
                         </p>
                     @endif
@@ -48,50 +52,56 @@
         </div>
 
         <!-- Demographic Information Section -->
-        <div class="border-t pt-4 mt-4">
-            <h3 class="text-md font-medium text-gray-900 mb-3">
+        <div class="border-top pt-4 mt-4">
+            <h3 class="mb-3">
                 {{ __('Demographic Information') }}
             </h3>
-            <p class="mt-1 mb-3 text-sm text-gray-600">
+            <p class="mb-3 text-muted small">
                 {{ __("This information is used for statistics purposes and is optional.") }}
             </p>
 
-            <div class="mt-4">
-                <x-input-label for="gender" :value="__('Gender')" />
-                <select id="gender" name="gender" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+            <div class="mb-3">
+                <label for="gender" class="form-label">{{ __('Gender') }}</label>
+                <select id="gender" name="gender" class="form-select @error('gender') is-invalid @enderror">
                     <option value="">{{ __('Prefer not to say') }}</option>
                     <option value="male" {{ old('gender', $user->gender) == 'male' ? 'selected' : '' }}>{{ __('Male') }}</option>
                     <option value="female" {{ old('gender', $user->gender) == 'female' ? 'selected' : '' }}>{{ __('Female') }}</option>
                     <option value="other" {{ old('gender', $user->gender) == 'other' ? 'selected' : '' }}>{{ __('Other') }}</option>
                 </select>
-                <x-input-error class="mt-2" :messages="$errors->get('gender')" />
+                @error('gender')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
-            <div class="mt-4">
-                <x-input-label for="birth_date" :value="__('Birth Date')" />
-                <x-text-input id="birth_date" name="birth_date" type="date" class="mt-1 block w-full" :value="old('birth_date', $user->birth_date?->format('Y-m-d'))" />
-                <small class="text-sm text-gray-500">{{ __('You can provide your birth date or select an age group below') }}</small>
-                <x-input-error class="mt-2" :messages="$errors->get('birth_date')" />
+            <div class="mb-3">
+                <label for="birth_date" class="form-label">{{ __('Birth Date') }}</label>
+                <input id="birth_date" name="birth_date" type="date" class="form-control @error('birth_date') is-invalid @enderror" value="{{ old('birth_date', $user->birth_date?->format('Y-m-d')) }}">
+                <small class="form-text text-muted">{{ __('You can provide your birth date or select an age group below') }}</small>
+                @error('birth_date')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
-            <div class="mt-4">
-                <x-input-label for="age_group" :value="__('Age Group (Alternative to Birth Date)')" />
-                <select id="age_group" name="age_group" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+            <div class="mb-3">
+                <label for="age_group" class="form-label">{{ __('Age Group (Alternative to Birth Date)') }}</label>
+                <select id="age_group" name="age_group" class="form-select @error('age_group') is-invalid @enderror">
                     <option value="">{{ __('Prefer not to say') }}</option>
-                    <option value="under_18" {{ old('age_group') == 'under_18' ? 'selected' : '' }}>{{ __('Under 18') }}</option>
-                    <option value="18_24" {{ old('age_group') == '18_24' ? 'selected' : '' }}>{{ __('18-24') }}</option>
-                    <option value="25_34" {{ old('age_group') == '25_34' ? 'selected' : '' }}>{{ __('25-34') }}</option>
-                    <option value="35_44" {{ old('age_group') == '35_44' ? 'selected' : '' }}>{{ __('35-44') }}</option>
-                    <option value="45_54" {{ old('age_group') == '45_54' ? 'selected' : '' }}>{{ __('45-54') }}</option>
-                    <option value="55_plus" {{ old('age_group') == '55_plus' ? 'selected' : '' }}>{{ __('55+') }}</option>
+                    <option value="under_18" {{ old('age_group', $user->age_group) == 'under_18' ? 'selected' : '' }}>{{ __('Under 18') }}</option>
+                    <option value="18_24" {{ old('age_group', $user->age_group) == '18_24' ? 'selected' : '' }}>{{ __('18-24') }}</option>
+                    <option value="25_34" {{ old('age_group', $user->age_group) == '25_34' ? 'selected' : '' }}>{{ __('25-34') }}</option>
+                    <option value="35_44" {{ old('age_group', $user->age_group) == '35_44' ? 'selected' : '' }}>{{ __('35-44') }}</option>
+                    <option value="45_54" {{ old('age_group', $user->age_group) == '45_54' ? 'selected' : '' }}>{{ __('45-54') }}</option>
+                    <option value="55_plus" {{ old('age_group', $user->age_group) == '55_plus' ? 'selected' : '' }}>{{ __('55+') }}</option>
                 </select>
-                <small class="text-sm text-gray-500">{{ __('If you prefer not to provide your exact birth date, you can select an age group instead') }}</small>
-                <x-input-error class="mt-2" :messages="$errors->get('age_group')" />
+                <small class="form-text text-muted">{{ __('If you prefer not to provide your exact birth date, you can select an age group instead') }}</small>
+                @error('age_group')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
-            <div class="mt-4">
-                <x-input-label for="continent" :value="__('Continent')" />
-                <select id="continent" name="continent" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+            <div class="mb-3">
+                <label for="continent" class="form-label">{{ __('Continent') }}</label>
+                <select id="continent" name="continent" class="form-select @error('continent') is-invalid @enderror">
                     <option value="">{{ __('Select a continent') }}</option>
                     <option value="Africa" {{ old('continent', $user->continent) == 'Africa' ? 'selected' : '' }}>{{ __('Africa') }}</option>
                     <option value="Asia" {{ old('continent', $user->continent) == 'Asia' ? 'selected' : '' }}>{{ __('Asia') }}</option>
@@ -101,12 +111,14 @@
                     <option value="Australia/Oceania" {{ old('continent', $user->continent) == 'Australia/Oceania' ? 'selected' : '' }}>{{ __('Australia/Oceania') }}</option>
                     <option value="Antarctica" {{ old('continent', $user->continent) == 'Antarctica' ? 'selected' : '' }}>{{ __('Antarctica') }}</option>
                 </select>
-                <x-input-error class="mt-2" :messages="$errors->get('continent')" />
+                @error('continent')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
-            <div class="mt-4">
-                <x-input-label for="country" :value="__('Country')" />
-                <select id="country" name="country" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+            <div class="mb-3">
+                <label for="country" class="form-label">{{ __('Country') }}</label>
+                <select id="country" name="country" class="form-select @error('country') is-invalid @enderror">
                     <option value="">{{ __('Select a country') }}</option>
                     @php
                         $countries = [
@@ -139,21 +151,19 @@
                         </option>
                     @endforeach
                 </select>
-                <x-input-error class="mt-2" :messages="$errors->get('country')" />
+                @error('country')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
         </div>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+            <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
 
             @if (session('status') === 'profile-updated')
-                <p
-                    x-data="{ show: true }"
-                    x-show="show"
-                    x-transition
-                    x-init="setTimeout(() => show = false, 2000)"
-                    class="text-sm text-gray-600"
-                >{{ __('Saved.') }}</p>
+                <div class="text-success">
+                    {{ __('Saved.') }}
+                </div>
             @endif
         </div>
     </form>
