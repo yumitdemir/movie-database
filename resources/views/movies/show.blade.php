@@ -64,10 +64,10 @@
                                 <input type="hidden" name="movie_id" value="{{ $movie->id }}">
                                 <div class="mb-3">
                                     <label for="rating" class="form-label">Your Rating</label>
-                                    <select class="form-select" id="rating" name="rating" required>
+                                    <select class="form-select" id="rating" name="value" required>
                                         <option value="" disabled {{ !$userRating ? 'selected' : '' }}>Select your rating</option>
                                         @for($i = 1; $i <= 10; $i++)
-                                            <option value="{{ $i }}" {{ $userRating && $userRating->rating == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                            <option value="{{ $i }}" {{ $userRating && $userRating->value == $i ? 'selected' : '' }}>{{ $i }}</option>
                                         @endfor
                                     </select>
                                 </div>

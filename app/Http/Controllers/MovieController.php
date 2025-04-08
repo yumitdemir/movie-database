@@ -76,6 +76,9 @@ class MovieController extends Controller
     public function show($id)
     {
         $movie = $this->movieService->getMovieById($id);
+        // Refresh the movie to get the latest rating data
+        $movie->refresh();
+        
         $comments = $this->commentService->getMovieComments($id);
         
         $userRating = null;
