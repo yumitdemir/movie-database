@@ -70,7 +70,23 @@
             <div class="mt-4">
                 <x-input-label for="birth_date" :value="__('Birth Date')" />
                 <x-text-input id="birth_date" name="birth_date" type="date" class="mt-1 block w-full" :value="old('birth_date', $user->birth_date?->format('Y-m-d'))" />
+                <small class="text-sm text-gray-500">{{ __('You can provide your birth date or select an age group below') }}</small>
                 <x-input-error class="mt-2" :messages="$errors->get('birth_date')" />
+            </div>
+
+            <div class="mt-4">
+                <x-input-label for="age_group" :value="__('Age Group (Alternative to Birth Date)')" />
+                <select id="age_group" name="age_group" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                    <option value="">{{ __('Prefer not to say') }}</option>
+                    <option value="under_18" {{ old('age_group') == 'under_18' ? 'selected' : '' }}>{{ __('Under 18') }}</option>
+                    <option value="18_24" {{ old('age_group') == '18_24' ? 'selected' : '' }}>{{ __('18-24') }}</option>
+                    <option value="25_34" {{ old('age_group') == '25_34' ? 'selected' : '' }}>{{ __('25-34') }}</option>
+                    <option value="35_44" {{ old('age_group') == '35_44' ? 'selected' : '' }}>{{ __('35-44') }}</option>
+                    <option value="45_54" {{ old('age_group') == '45_54' ? 'selected' : '' }}>{{ __('45-54') }}</option>
+                    <option value="55_plus" {{ old('age_group') == '55_plus' ? 'selected' : '' }}>{{ __('55+') }}</option>
+                </select>
+                <small class="text-sm text-gray-500">{{ __('If you prefer not to provide your exact birth date, you can select an age group instead') }}</small>
+                <x-input-error class="mt-2" :messages="$errors->get('age_group')" />
             </div>
 
             <div class="mt-4">
@@ -90,7 +106,39 @@
 
             <div class="mt-4">
                 <x-input-label for="country" :value="__('Country')" />
-                <x-text-input id="country" name="country" type="text" class="mt-1 block w-full" :value="old('country', $user->country)" />
+                <select id="country" name="country" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                    <option value="">{{ __('Select a country') }}</option>
+                    @php
+                        $countries = [
+                            'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria', 
+                            'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia', 
+                            'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia', 
+                            'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo', 
+                            'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czech Republic', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 
+                            'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 
+                            'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 
+                            'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 
+                            'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Korea, North', 'Korea, South', 'Kosovo', 'Kuwait', 
+                            'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 
+                            'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 
+                            'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 
+                            'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Macedonia', 'Norway', 'Oman', 'Pakistan', 
+                            'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 
+                            'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 
+                            'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 
+                            'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 
+                            'Suriname', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 
+                            'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 
+                            'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 
+                            'Zambia', 'Zimbabwe'
+                        ];
+                    @endphp
+                    @foreach($countries as $countryName)
+                        <option value="{{ $countryName }}" {{ old('country', $user->country) == $countryName ? 'selected' : '' }}>
+                            {{ $countryName }}
+                        </option>
+                    @endforeach
+                </select>
                 <x-input-error class="mt-2" :messages="$errors->get('country')" />
             </div>
         </div>

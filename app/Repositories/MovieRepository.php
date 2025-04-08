@@ -214,19 +214,30 @@ class MovieRepository extends BaseRepository
         $currentYear = (int)date('Y');
         
         foreach ($ageGroups as $group => $range) {
-            if ($range === null) {
-                // Handle users without birth_date
+            if ($group === 'unknown') {
+                // Handle users without birth_date and age_group
                 $query = \App\Models\Rating::where('movie_id', $movieId)
                     ->whereHas('user', function ($q) {
-                        $q->whereNull('birth_date');
+                        $q->whereNull('birth_date')
+                          ->whereNull('age_group');
                     });
             } else {
+                // Combine ratings from both approaches:
+                // 1. Users who provided an explicit age_group
+                // 2. Users whose birth_date puts them in this age group
+                $ageGroupQuery = \App\Models\Rating::where('movie_id', $movieId)
+                    ->whereHas('user', function ($q) use ($group) {
+                        $q->where('age_group', $group);
+                    });
+                
+                // Calculate age from birth_date
                 $minYear = $currentYear - $range[1] - 1;
                 $maxYear = $currentYear - $range[0];
                 
-                $query = \App\Models\Rating::where('movie_id', $movieId)
-                    ->whereHas('user', function ($q) use ($minYear, $maxYear, $currentDate) {
-                        $q->whereNotNull('birth_date')
+                $birthDateQuery = \App\Models\Rating::where('movie_id', $movieId)
+                    ->whereHas('user', function ($q) use ($minYear, $maxYear, $currentDate, $group) {
+                        $q->whereNull('age_group') // Only count users who haven't specified an age_group
+                          ->whereNotNull('birth_date')
                           ->where(function ($query) use ($minYear, $maxYear, $currentDate) {
                               // Users born between minYear and maxYear
                               $query->whereRaw("strftime('%Y', birth_date) > ?", [$minYear])
@@ -238,6 +249,24 @@ class MovieRepository extends BaseRepository
                                     });
                           });
                     });
+                
+                // Get counts and averages from both queries
+                $ageGroupCount = $ageGroupQuery->count();
+                $ageGroupSum = $ageGroupQuery->sum('value');
+                
+                $birthDateCount = $birthDateQuery->count();
+                $birthDateSum = $birthDateQuery->sum('value');
+                
+                // Combine the results
+                $totalCount = $ageGroupCount + $birthDateCount;
+                $totalSum = $ageGroupSum + $birthDateSum;
+                
+                $stats[$group] = [
+                    'count' => $totalCount,
+                    'average' => $totalCount > 0 ? $totalSum / $totalCount : 0,
+                ];
+                
+                continue; // Skip the regular processing
             }
             
             $stats[$group] = [

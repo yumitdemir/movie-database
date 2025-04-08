@@ -26,7 +26,20 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $data = $request->validated();
+        
+        // If user provides age_group but not birth_date, 
+        // clear birth_date to avoid conflicts in demographic statistics
+        if (!empty($data['age_group']) && empty($data['birth_date'])) {
+            $data['birth_date'] = null;
+        }
+        
+        // If user provides birth_date, clear age_group
+        if (!empty($data['birth_date']) && !empty($data['age_group'])) {
+            $data['age_group'] = null;
+        }
+        
+        $request->user()->fill($data);
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;

@@ -29,6 +29,7 @@ class ProfileUpdateRequest extends FormRequest
             'birth_date' => ['nullable', 'date', 'before_or_equal:today'],
             'country' => ['nullable', 'string', 'max:100'],
             'continent' => ['nullable', 'string', 'in:Africa,Asia,Europe,North America,South America,Australia/Oceania,Antarctica'],
+            'age_group' => ['nullable', 'string', 'in:under_18,18_24,25_34,35_44,45_54,55_plus'],
         ];
     }
 }
