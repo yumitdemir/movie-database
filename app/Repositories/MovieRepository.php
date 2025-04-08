@@ -34,17 +34,18 @@ class MovieRepository extends BaseRepository
         $movie = $this->create($attributes);
         
         if (isset($relations['genres'])) {
-            $movie->genres()->sync($relations['genres']);
+            $genreIds = $this->syncGenresByName($relations['genres']);
+            $movie->genres()->sync($genreIds);
         }
         
         if (isset($relations['directors'])) {
-            $movie->directors()->sync($relations['directors']);
+            $directorIds = $this->syncDirectorsByName($relations['directors']);
+            $movie->directors()->sync($directorIds);
         }
         
         if (isset($relations['artists'])) {
-            foreach ($relations['artists'] as $artistId => $role) {
-                $movie->artists()->attach($artistId, ['role' => $role]);
-            }
+            $artistIds = $this->syncArtistsByName($relations['artists']);
+            $movie->artists()->sync($artistIds);
         }
         
         return $movie;
@@ -55,21 +56,57 @@ class MovieRepository extends BaseRepository
         $movie = $this->update($id, $attributes);
         
         if (isset($relations['genres'])) {
-            $movie->genres()->sync($relations['genres']);
+            $genreIds = $this->syncGenresByName($relations['genres']);
+            $movie->genres()->sync($genreIds);
         }
         
         if (isset($relations['directors'])) {
-            $movie->directors()->sync($relations['directors']);
+            $directorIds = $this->syncDirectorsByName($relations['directors']);
+            $movie->directors()->sync($directorIds);
         }
         
         if (isset($relations['artists'])) {
-            $movie->artists()->detach();
-            foreach ($relations['artists'] as $artistId => $role) {
-                $movie->artists()->attach($artistId, ['role' => $role]);
-            }
+            $artistIds = $this->syncArtistsByName($relations['artists']);
+            $movie->artists()->sync($artistIds);
         }
         
         return $movie;
+    }
+    
+    protected function syncGenresByName(array $genreNames)
+    {
+        $genreIds = [];
+        
+        foreach ($genreNames as $name) {
+            $genre = \App\Models\Genre::firstOrCreate(['name' => $name]);
+            $genreIds[] = $genre->id;
+        }
+        
+        return $genreIds;
+    }
+    
+    protected function syncDirectorsByName(array $directorNames)
+    {
+        $directorIds = [];
+        
+        foreach ($directorNames as $name) {
+            $director = \App\Models\Director::firstOrCreate(['name' => $name]);
+            $directorIds[] = $director->id;
+        }
+        
+        return $directorIds;
+    }
+    
+    protected function syncArtistsByName(array $artistNames)
+    {
+        $artistIds = [];
+        
+        foreach ($artistNames as $name) {
+            $artist = \App\Models\Artist::firstOrCreate(['name' => $name]);
+            $artistIds[] = $artist->id;
+        }
+        
+        return $artistIds;
     }
     
     public function searchMovies($term, $perPage = 15)

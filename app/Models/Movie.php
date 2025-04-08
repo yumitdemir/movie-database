@@ -22,19 +22,19 @@ class Movie extends Model
     
     public function genres()
     {
-        return $this->belongsToMany(Genre::class);
+        return $this->belongsToMany(Genre::class, 'movie_genre');
     }
     
     public function artists()
     {
-        return $this->belongsToMany(Artist::class)
+        return $this->belongsToMany(Artist::class, 'movie_artist')
             ->withPivot('role')
             ->withTimestamps();
     }
     
     public function directors()
     {
-        return $this->belongsToMany(Director::class);
+        return $this->belongsToMany(Director::class, 'movie_director');
     }
     
     public function comments()
