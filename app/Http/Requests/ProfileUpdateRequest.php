@@ -25,6 +25,10 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            'gender' => ['nullable', 'string', 'in:male,female,other'],
+            'birth_date' => ['nullable', 'date', 'before_or_equal:today'],
+            'country' => ['nullable', 'string', 'max:100'],
+            'continent' => ['nullable', 'string', 'in:Africa,Asia,Europe,North America,South America,Australia/Oceania,Antarctica'],
         ];
     }
 }

@@ -47,6 +47,54 @@
             @endif
         </div>
 
+        <!-- Demographic Information Section -->
+        <div class="border-t pt-4 mt-4">
+            <h3 class="text-md font-medium text-gray-900 mb-3">
+                {{ __('Demographic Information') }}
+            </h3>
+            <p class="mt-1 mb-3 text-sm text-gray-600">
+                {{ __("This information is used for statistics purposes and is optional.") }}
+            </p>
+
+            <div class="mt-4">
+                <x-input-label for="gender" :value="__('Gender')" />
+                <select id="gender" name="gender" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                    <option value="">{{ __('Prefer not to say') }}</option>
+                    <option value="male" {{ old('gender', $user->gender) == 'male' ? 'selected' : '' }}>{{ __('Male') }}</option>
+                    <option value="female" {{ old('gender', $user->gender) == 'female' ? 'selected' : '' }}>{{ __('Female') }}</option>
+                    <option value="other" {{ old('gender', $user->gender) == 'other' ? 'selected' : '' }}>{{ __('Other') }}</option>
+                </select>
+                <x-input-error class="mt-2" :messages="$errors->get('gender')" />
+            </div>
+
+            <div class="mt-4">
+                <x-input-label for="birth_date" :value="__('Birth Date')" />
+                <x-text-input id="birth_date" name="birth_date" type="date" class="mt-1 block w-full" :value="old('birth_date', $user->birth_date?->format('Y-m-d'))" />
+                <x-input-error class="mt-2" :messages="$errors->get('birth_date')" />
+            </div>
+
+            <div class="mt-4">
+                <x-input-label for="continent" :value="__('Continent')" />
+                <select id="continent" name="continent" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                    <option value="">{{ __('Select a continent') }}</option>
+                    <option value="Africa" {{ old('continent', $user->continent) == 'Africa' ? 'selected' : '' }}>{{ __('Africa') }}</option>
+                    <option value="Asia" {{ old('continent', $user->continent) == 'Asia' ? 'selected' : '' }}>{{ __('Asia') }}</option>
+                    <option value="Europe" {{ old('continent', $user->continent) == 'Europe' ? 'selected' : '' }}>{{ __('Europe') }}</option>
+                    <option value="North America" {{ old('continent', $user->continent) == 'North America' ? 'selected' : '' }}>{{ __('North America') }}</option>
+                    <option value="South America" {{ old('continent', $user->continent) == 'South America' ? 'selected' : '' }}>{{ __('South America') }}</option>
+                    <option value="Australia/Oceania" {{ old('continent', $user->continent) == 'Australia/Oceania' ? 'selected' : '' }}>{{ __('Australia/Oceania') }}</option>
+                    <option value="Antarctica" {{ old('continent', $user->continent) == 'Antarctica' ? 'selected' : '' }}>{{ __('Antarctica') }}</option>
+                </select>
+                <x-input-error class="mt-2" :messages="$errors->get('continent')" />
+            </div>
+
+            <div class="mt-4">
+                <x-input-label for="country" :value="__('Country')" />
+                <x-text-input id="country" name="country" type="text" class="mt-1 block w-full" :value="old('country', $user->country)" />
+                <x-input-error class="mt-2" :messages="$errors->get('country')" />
+            </div>
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

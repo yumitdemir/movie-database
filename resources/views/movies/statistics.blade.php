@@ -103,5 +103,175 @@
                 </div>
             </div>
         </div>
+
+        <!-- Demographic Statistics Section -->
+        <h2 class="mt-4 mb-3">Demographic Analysis</h2>
+        
+        <div class="row">
+            <!-- Gender Statistics -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Ratings by Gender</h5>
+                    </div>
+                    <div class="card-body">
+                        @if(isset($statistics['demographics']['gender']))
+                            <div class="row">
+                                @foreach($statistics['demographics']['gender'] as $gender => $data)
+                                    @if($data['count'] > 0)
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card">
+                                                <div class="card-body text-center">
+                                                    <h6 class="card-title text-capitalize">{{ $gender == 'unspecified' ? 'Not Specified' : $gender }}</h6>
+                                                    <div class="display-6 text-warning">★ {{ number_format($data['average'], 1) }}</div>
+                                                    <p class="text-muted">{{ $data['count'] }} {{ Str::plural('rating', $data['count']) }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-center">No gender data available</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Age Group Statistics -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Ratings by Age Group</h5>
+                    </div>
+                    <div class="card-body">
+                        @if(isset($statistics['demographics']['age']))
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Age Group</th>
+                                            <th>Average Rating</th>
+                                            <th>Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($statistics['demographics']['age'] as $ageGroup => $data)
+                                            @if($data['count'] > 0)
+                                                <tr>
+                                                    <td>
+                                                        @switch($ageGroup)
+                                                            @case('under_18')
+                                                                Under 18
+                                                                @break
+                                                            @case('18_24')
+                                                                18-24
+                                                                @break
+                                                            @case('25_34')
+                                                                25-34
+                                                                @break
+                                                            @case('35_44')
+                                                                35-44
+                                                                @break
+                                                            @case('45_54')
+                                                                45-54
+                                                                @break
+                                                            @case('55_plus')
+                                                                55+
+                                                                @break
+                                                            @case('unknown')
+                                                                Not Specified
+                                                                @break
+                                                        @endswitch
+                                                    </td>
+                                                    <td><span class="text-warning">★</span> {{ number_format($data['average'], 1) }}</td>
+                                                    <td>{{ $data['count'] }}</td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <p class="text-center">No age data available</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Geographic Statistics -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Ratings by Continent</h5>
+                    </div>
+                    <div class="card-body">
+                        @if(isset($statistics['demographics']['geography']['continents']))
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Continent</th>
+                                            <th>Average Rating</th>
+                                            <th>Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($statistics['demographics']['geography']['continents'] as $continent => $data)
+                                            @if($data['count'] > 0)
+                                                <tr>
+                                                    <td>{{ $continent == 'unspecified' ? 'Not Specified' : $continent }}</td>
+                                                    <td><span class="text-warning">★</span> {{ number_format($data['average'], 1) }}</td>
+                                                    <td>{{ $data['count'] }}</td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <p class="text-center">No continent data available</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Country Statistics -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Ratings by Country (Top Countries)</h5>
+                    </div>
+                    <div class="card-body">
+                        @if(isset($statistics['demographics']['geography']['countries']))
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Country</th>
+                                            <th>Average Rating</th>
+                                            <th>Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($statistics['demographics']['geography']['countries'] as $country => $data)
+                                            @if($data['count'] > 0)
+                                                <tr>
+                                                    <td>{{ $country == 'unspecified' ? 'Not Specified' : $country }}</td>
+                                                    <td><span class="text-warning">★</span> {{ number_format($data['average'], 1) }}</td>
+                                                    <td>{{ $data['count'] }}</td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <p class="text-center">No country data available</p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection 

@@ -132,7 +132,15 @@ class MovieRepository extends BaseRepository
             'ratings_distribution' => $this->getRatingDistribution($movieId),
             'recent_comments' => $movie->comments()->with('user')->latest()->take(5)->get(),
             'recent_ratings' => $movie->ratings()->with('user')->latest()->take(5)->get(),
-            'comments_count' => $movie->comments()->count()
+            'comments_count' => $movie->comments()->count(),
+            'demographics' => [
+                'gender' => $this->getRatingsByGender($movieId),
+                'age' => $this->getRatingsByAgeGroup($movieId),
+                'geography' => [
+                    'continents' => $this->getRatingsByContinent($movieId),
+                    'countries' => $this->getRatingsByCountry($movieId)
+                ]
+            ]
         ];
     }
     
@@ -154,5 +162,171 @@ class MovieRepository extends BaseRepository
         }
         
         return $distribution;
+    }
+    
+    /**
+     * Get ratings distribution by gender
+     */
+    protected function getRatingsByGender($movieId)
+    {
+        $stats = [];
+        $genders = ['male', 'female', 'other', 'unspecified'];
+        
+        foreach ($genders as $gender) {
+            $query = \App\Models\Rating::where('movie_id', $movieId);
+            
+            if ($gender === 'unspecified') {
+                $query = $query->whereHas('user', function ($q) {
+                    $q->whereNull('gender');
+                });
+            } else {
+                $query = $query->whereHas('user', function ($q) use ($gender) {
+                    $q->where('gender', $gender);
+                });
+            }
+            
+            $stats[$gender] = [
+                'count' => $query->count(),
+                'average' => $query->avg('value') ?: 0,
+            ];
+        }
+        
+        return $stats;
+    }
+    
+    /**
+     * Get ratings distribution by age groups
+     */
+    protected function getRatingsByAgeGroup($movieId)
+    {
+        $stats = [];
+        $ageGroups = [
+            'under_18' => [0, 17],
+            '18_24' => [18, 24],
+            '25_34' => [25, 34],
+            '35_44' => [35, 44],
+            '45_54' => [45, 54],
+            '55_plus' => [55, 200],
+            'unknown' => null
+        ];
+        
+        $currentDate = date('Y-m-d');
+        $currentYear = (int)date('Y');
+        
+        foreach ($ageGroups as $group => $range) {
+            if ($range === null) {
+                // Handle users without birth_date
+                $query = \App\Models\Rating::where('movie_id', $movieId)
+                    ->whereHas('user', function ($q) {
+                        $q->whereNull('birth_date');
+                    });
+            } else {
+                $minYear = $currentYear - $range[1] - 1;
+                $maxYear = $currentYear - $range[0];
+                
+                $query = \App\Models\Rating::where('movie_id', $movieId)
+                    ->whereHas('user', function ($q) use ($minYear, $maxYear, $currentDate) {
+                        $q->whereNotNull('birth_date')
+                          ->where(function ($query) use ($minYear, $maxYear, $currentDate) {
+                              // Users born between minYear and maxYear
+                              $query->whereRaw("strftime('%Y', birth_date) > ?", [$minYear])
+                                    ->whereRaw("strftime('%Y', birth_date) <= ?", [$maxYear])
+                                    // For the upper bound, ensure we're only counting people who have had their birthday this year
+                                    ->orWhere(function ($q) use ($maxYear, $currentDate) {
+                                        $q->whereRaw("strftime('%Y', birth_date) = ?", [$maxYear])
+                                          ->whereRaw("strftime('%m-%d', birth_date) <= strftime('%m-%d', ?)", [$currentDate]);
+                                    });
+                          });
+                    });
+            }
+            
+            $stats[$group] = [
+                'count' => $query->count(),
+                'average' => $query->avg('value') ?: 0,
+            ];
+        }
+        
+        return $stats;
+    }
+    
+    /**
+     * Get ratings distribution by continent
+     */
+    protected function getRatingsByContinent($movieId)
+    {
+        $stats = [];
+        $continents = [
+            'Africa', 'Asia', 'Europe', 'North America', 'South America', 
+            'Australia/Oceania', 'Antarctica', 'unspecified'
+        ];
+        
+        foreach ($continents as $continent) {
+            $query = \App\Models\Rating::where('movie_id', $movieId);
+            
+            if ($continent === 'unspecified') {
+                $query = $query->whereHas('user', function ($q) {
+                    $q->whereNull('continent');
+                });
+            } else {
+                $query = $query->whereHas('user', function ($q) use ($continent) {
+                    $q->where('continent', $continent);
+                });
+            }
+            
+            $stats[$continent] = [
+                'count' => $query->count(),
+                'average' => $query->avg('value') ?: 0,
+            ];
+        }
+        
+        return $stats;
+    }
+    
+    /**
+     * Get ratings distribution by top countries
+     */
+    protected function getRatingsByCountry($movieId)
+    {
+        // Get countries with at least one rating
+        $countries = \App\Models\Rating::where('movie_id', $movieId)
+            ->whereHas('user', function ($q) {
+                $q->whereNotNull('country');
+            })
+            ->with('user')
+            ->get()
+            ->pluck('user.country')
+            ->unique()
+            ->values()
+            ->toArray();
+        
+        // Add 'unspecified' for users without country
+        $countries[] = 'unspecified';
+        
+        $stats = [];
+        foreach ($countries as $country) {
+            $query = \App\Models\Rating::where('movie_id', $movieId);
+            
+            if ($country === 'unspecified') {
+                $query = $query->whereHas('user', function ($q) {
+                    $q->whereNull('country');
+                });
+            } else {
+                $query = $query->whereHas('user', function ($q) use ($country) {
+                    $q->where('country', $country);
+                });
+            }
+            
+            $stats[$country] = [
+                'count' => $query->count(),
+                'average' => $query->avg('value') ?: 0,
+            ];
+        }
+        
+        // Sort by count descending and take top 10
+        uasort($stats, function ($a, $b) {
+            return $b['count'] <=> $a['count']; 
+        });
+        
+        return array_slice($stats, 0, 10);
     }
 } 
