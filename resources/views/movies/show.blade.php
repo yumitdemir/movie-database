@@ -92,7 +92,7 @@
                                     <h6>Genres</h6>
                                     <div>
                                         @foreach($movie->genres as $genre)
-                                            <span class="badge bg-primary">{{ $genre }}</span>
+                                            <span class="badge bg-primary">{{ $genre->name }}</span>
                                         @endforeach
                                     </div>
                                 </div>
@@ -103,7 +103,7 @@
                                     <h6>Directors</h6>
                                     <div>
                                         @foreach($movie->directors as $director)
-                                            <span class="badge bg-secondary">{{ $director }}</span>
+                                            <span class="badge bg-secondary">{{ $director->name }}</span>
                                         @endforeach
                                     </div>
                                 </div>
@@ -114,7 +114,7 @@
                                     <h6>Artists</h6>
                                     <div>
                                         @foreach($movie->artists as $artist)
-                                            <span class="badge bg-info">{{ $artist }}</span>
+                                            <span class="badge bg-info">{{ $artist->name }}</span>
                                         @endforeach
                                     </div>
                                 </div>
